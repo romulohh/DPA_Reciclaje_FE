@@ -7,74 +7,96 @@
       </div>
 
       <form class="login-form" id="registerForm" @submit.prevent="IniciarRegistro" novalidate>
-        <div class="form-group" :class="{ error: errors.nombres }">
-          <div class="input-wrapper">
-            <input v-model="nombres" type="text" id="nombres" name="nombres" required autocomplete="given-name" />
-            <label for="nombres">Nombres</label>
+        <div style="display: flex; gap: 16px;">
+          <div class="form-group" :class="{ error: errors.nombres }">
+            <div class="input-wrapper">
+              <input v-model="nombres" type="text" id="nombres" name="nombres" required autocomplete="given-name" style="flex: 1;" />
+              <label for="nombres">Nombres</label>
+            </div>
+            <span class="error-message" v-if="errors.nombres">{{ errors.nombres }}</span>
           </div>
-          <span class="error-message" v-if="errors.nombres">{{ errors.nombres }}</span>
+          <div class="form-group" :class="{ error: errors.apellidos }">
+            <div class="input-wrapper">
+              <input v-model="apellidos" type="text" id="apellidos" name="apellidos" required autocomplete="family-name" />
+              <label for="apellidos">Apellidos</label>
+            </div>
+            <span class="error-message" v-if="errors.apellidos">{{ errors.apellidos }}</span>
+          </div>
         </div>
 
-        <div class="form-group" :class="{ error: errors.apellidos }">
-          <div class="input-wrapper">
-            <input
-              v-model="apellidos"
-              type="text"
-              id="apellidos"
-              name="apellidos"
-              required
-              autocomplete="family-name"
-            />
-            <label for="apellidos">Apellidos</label>
+        <div style="display: flex; gap: 16px; justify-content: center;">
+          <div class="form-group" :class="{ error: errors.email }">
+            <div class="input-wrapper">
+              <input v-model="email" type="email" id="email" name="email" required autocomplete="email" />
+              <label for="email">Correo</label>
+            </div>
+            <span class="error-message" v-if="errors.email">{{ errors.email }}</span>
           </div>
-          <span class="error-message" v-if="errors.apellidos">{{ errors.apellidos }}</span>
+
+          <div class="form-group" :class="{ error: errors.clave }">
+            <div class="input-wrapper password-wrapper">
+              <input v-model="clave" :type="showPassword ? 'text' : 'password'" id="clave" name="clave"
+                required autocomplete="new-password"/>
+                <label for="clave">Clave</label>
+              <button type="button" class="password-toggle" id="passwordToggle"
+                aria-label="Toggle password visibility" @click="togglePassword">
+                <span class="eye-icon" :class="{ 'show-password': showPassword }"></span>
+              </button>
+            </div>
+            <span class="error-message" v-if="errors.clave">{{ errors.clave }}</span>
+          </div>
         </div>
 
-        <div class="form-group" :class="{ error: errors.email }">
-          <div class="input-wrapper">
-            <input v-model="email" type="email" id="email" name="email" required autocomplete="email" />
-            <label for="email">Correo electrónico</label>
+        <div style="display: flex; gap: 16px;">
+          <div class="form-group" :class="{ error: errors.direccion }">
+            <div class="input-wrapper">
+              <input v-model="direccion" type="text" id="direccion" name="direccion" required
+                autocomplete="street-address"/>
+              <label for="direccion">Dirección</label>
+            </div>
+            <span class="error-message" v-if="errors.direccion">{{ errors.direccion }}</span>
           </div>
-          <span class="error-message" v-if="errors.email">{{ errors.email }}</span>
+
+          <!-- Selects dependientes: Departamento -> Provincia -> Distrito -->
+          <div class="form-group" :class="{ error: errors.departamento }">
+            <div class="input-wrapper">
+              <select v-model="departamentoSeleccionado" id="departamento" name="departamento"
+                @change="onDepartamentoChange">
+                <option value="">Seleccione departamento</option>
+                <option v-for="d in departamentos" :key="d.idDepartamento" :value="d.idDepartamento">
+                  {{ d.nombre }}
+                </option>
+              </select>
+              <!-- <label for="departamento">Departamento</label> -->
+            </div>
+            <span class="error-message" v-if="errors.departamento">{{ errors.departamento }}</span>
+          </div>
         </div>
 
-        <div class="form-group" :class="{ error: errors.clave }">
-          <div class="input-wrapper password-wrapper">
-            <input
-              v-model="clave"
-              :type="showPassword ? 'text' : 'password'"
-              id="clave"
-              name="clave"
-              required
-              autocomplete="new-password"
-            />
-            <label for="clave">Clave</label>
-            <button
-              type="button"
-              class="password-toggle"
-              id="passwordToggle"
-              aria-label="Toggle password visibility"
-              @click="togglePassword"
-            >
-              <span class="eye-icon" :class="{ 'show-password': showPassword }"></span>
-            </button>
+        <div style="display: flex; gap: 16px;">
+          <div class="form-group" :class="{ error: errors.provincia }">
+            <div class="input-wrapper">
+              <select v-model="provinciaSeleccionada" id="provincia" name="provincia"
+                @change="onProvinciaChange" :disabled="!provincias.length">
+                <option value="">Seleccione provincia</option>
+                <option v-for="p in provincias" :key="p.idProvincia" :value="p.idProvincia">
+                  {{ p.nombre }}
+                </option>
+              </select>
+              <!-- <label for="provincia">Provincia</label> -->
+            </div>
+            <span class="error-message" v-if="errors.provincia">{{ errors.provincia }}</span>
           </div>
-          <span class="error-message" v-if="errors.clave">{{ errors.clave }}</span>
-        </div>
-
-        <div class="form-group" :class="{ error: errors.direccion }">
-          <div class="input-wrapper">
-            <input
-              v-model="direccion"
-              type="text"
-              id="direccion"
-              name="direccion"
-              required
-              autocomplete="street-address"
-            />
-            <label for="direccion">Dirección</label>
+          <div class="form-group" :class="{ error: errors.distrito }">
+            <div class="input-wrapper">
+              <select v-model="distritoSeleccionado" id="distrito" name="distrito" :disabled="!distritos.length">
+                <option value="">Seleccione distrito</option>
+                <option v-for="t in distritos" :key="t.idDistrito" :value="t.idDistrito">{{ t.nombre }}</option>
+              </select>
+              <!-- <label for="distrito">Distrito</label> -->
+            </div>
+            <span class="error-message" v-if="errors.distrito">{{ errors.distrito }}</span>
           </div>
-          <span class="error-message" v-if="errors.direccion">{{ errors.direccion }}</span>
         </div>
 
         <button @click="IniciarRegistro" type="submit" class="login-btn">
@@ -116,7 +138,7 @@ body {
 
 .login-container {
   width: 100%;
-  max-width: 400px;
+  max-width: 600px;
   position: absolute;
   top: 50%;
   left: 50%;
@@ -456,6 +478,59 @@ body {
     gap: 16px;
   }
 }
+
+/* Estilos para selects (misma apariencia que los inputs) */
+.input-wrapper select {
+  background: rgb(250, 250, 250);
+  border: 2px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #1e293b;
+  font-size: 16px;
+  transition: all 0.2s ease;
+  width: 100%;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  /* asegurar que el desplegable se muestre por encima cuando esté enfocado */
+  position: relative;
+  z-index: 1;
+}
+
+.input-wrapper select:focus {
+  border-color: #6366f1;
+  z-index: 9999;
+}
+
+.input-wrapper select[disabled] {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Forzar color y fondo de las opciones (algún navegador/tema puede requerirlo) */
+.input-wrapper select option {
+  color: #1e293b;
+  background: white;
+}
+
+/* si quieres un indicador visual tipo flecha a la derecha */
+.input-wrapper.select-with-arrow {
+  position: relative;
+}
+.input-wrapper.select-with-arrow::after {
+  content: '';
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%2364748b'%3e%3cpath d='M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.08z'/%3e%3c/svg%3e");
+  background-size: contain;
+  background-repeat: no-repeat;
+}
 </style>
 
 <script>
@@ -468,6 +543,12 @@ export default {
       email: '',
       clave: '',
       direccion: '',
+      departamentos: [],
+      provincias: [],
+      distritos: [],
+      departamentoSeleccionado: '',
+      provinciaSeleccionada: '',
+      distritoSeleccionado: '',
       showPassword: false,
       loading: false,
       success: false,
@@ -475,6 +556,81 @@ export default {
     }
   },
   methods: {
+    // Cargas de listas
+    fetchDepartamentos() {
+      this.$api
+        .get('api/Departamento')
+        .then((res) => {
+          this.departamentos = Array.isArray(res.data) ? res.data : []
+        })
+        .catch((err) => {
+          const msg = err?.response?.data?.message || err.message || 'No se pudieron cargar departamentos.'
+          this.$q.notify({ type: 'negative', position: 'top', message: msg })
+        })
+    },
+    fetchProvincias() {
+      if (!this.departamentoSeleccionado) {
+        this.provincias = []
+        return
+      }
+      // Intentar pedir al backend filtrando por idDepartamento
+      this.$api
+        .get('api/Provincia/byDepartamento/' + this.departamentoSeleccionado )
+        .then((res) => {
+          this.provincias = Array.isArray(res.data) ? res.data : []
+        })
+        .catch((err) => {
+          // fallback: intentar cargar todo y filtrar (por si backend no soporta param)
+          this.$api
+            .get('api/Provincia')
+            .then((r) => {
+              const all = Array.isArray(r.data) ? r.data : []
+              this.provincias = all.filter((p) => String(p.idDepartamento) === String(this.departamentoSeleccionado))
+            })
+            .catch(() => {
+              const msg = err?.response?.data?.message || err.message || 'No se pudieron cargar provincias.'
+              this.$q.notify({ type: 'negative', position: 'top', message: msg })
+            })
+        })
+    },
+    fetchDistritos() {
+      if (!this.provinciaSeleccionada) {
+        this.distritos = []
+        return
+      }
+      this.$api
+        .get('api/Distrito/byProvincia/' + this.provinciaSeleccionada )
+        .then((res) => {
+          this.distritos = Array.isArray(res.data) ? res.data : []
+        })
+        .catch((err) => {
+          // fallback: cargar todo y filtrar
+          this.$api
+            .get('api/Distrito')
+            .then((r) => {
+              const all = Array.isArray(r.data) ? r.data : []
+              this.distritos = all.filter((t) => String(t.idProvincia) === String(this.provinciaSeleccionada))
+            })
+            .catch(() => {
+              const msg = err?.response?.data?.message || err.message || 'No se pudieron cargar distritos.'
+              this.$q.notify({ type: 'negative', position: 'top', message: msg })
+            })
+        })
+    },
+
+    onDepartamentoChange() {
+      this.provinciaSeleccionada = ''
+      this.distritoSeleccionado = ''
+      this.provincias = []
+      this.distritos = []
+      this.fetchProvincias()
+    },
+
+    onProvinciaChange() {
+      this.distritoSeleccionado = ''
+      this.distritos = []
+      this.fetchDistritos()
+    },
     togglePassword() {
       this.showPassword = !this.showPassword
     },
@@ -486,19 +642,24 @@ export default {
       else if (!/.+@.+\..+/.test(this.email)) this.errors.email = 'Correo inválido'
       if (!this.clave) this.errors.clave = 'Ingrese una clave'
       if (!this.direccion) this.errors.direccion = 'Ingrese dirección'
+      if (!this.departamentoSeleccionado) this.errors.departamento = 'Seleccione departamento'
+      if (!this.provinciaSeleccionada) this.errors.provincia = 'Seleccione provincia'
+      if (!this.distritoSeleccionado) this.errors.distrito = 'Seleccione distrito'
       return Object.keys(this.errors).length === 0
     },
     IniciarRegistro() {
       if (!this.validate()) return
       this.loading = true
-      let endpointURL = 'api/usuario/signup'
+      let endpointURL = 'api/usuario/SignUp'
       let payload = {
         Nombres: this.nombres,
         Apellidos: this.apellidos,
         Email: this.email,
         Clave: this.clave,
-        IdDistrito: 1,
         Direccion: this.direccion,
+        IdDepartamento: this.departamentoSeleccionado,
+        IdProvincia: this.provinciaSeleccionada,
+        IdDistrito: this.distritoSeleccionado,
         Rol: 'U',
         Situacion: 'C',
         Estado: 'A',
@@ -530,6 +691,9 @@ export default {
           this.loading = false
         })
     },
+  },
+  mounted() {
+    this.fetchDepartamentos()
   },
 }
 </script>
