@@ -46,11 +46,36 @@
           </div>
         </div>
 
+        <div style="display:flex; gap:16px;">
+          <div class="form-group" style="flex:1;">
+            <div class="input-wrapper">
+              <input v-model="marca" type="text" id="marca" name="marca" />
+              <label for="marca">Marca</label>
+            </div>
+          </div>
+
+          <div class="form-group" style="flex:1;">
+            <div class="input-wrapper">
+              <select v-model="disponible" id="disponible" name="disponible">
+                <option value="1">Disponible</option>
+                <option value="0">No disponible</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="input-wrapper">
+            <input v-model="motivo" type="text" id="motivo" name="motivo" />
+            <label for="motivo">Motivo</label>
+          </div>
+        </div>
+
         <div class="form-group">
           <div class="input-wrapper">
             <select v-model="estado" id="estado">
-              <option value="A">Activo</option>
-              <option value="I">Inactivo</option>
+              <option value="1">Activo</option>
+              <option value="0">Inactivo</option>
             </select>
           </div>
         </div>
@@ -90,12 +115,15 @@ export default {
     return {
       nombre: '',
       descripcion: '',
+      marca: '',
       precio: null,
       cantidad: null,
+      motivo: '',
       categoriaId: '',
       categorias: [],
       loadingCategories: false,
       estado: 'A',
+      disponible: '1',
       loading: false,
     }
   },
@@ -133,10 +161,14 @@ export default {
       const payload = {
         Nombre: this.nombre,
         Descripcion: this.descripcion,
+        Marca: this.marca || null,
         Precio: this.precio,
         Cantidad: this.cantidad,
+        Motivo: this.motivo || null,
         IdCategoria: this.categoriaId ? Number(this.categoriaId) : null,
-        Estado: this.estado,
+        // Guardar Estado como '1' (activo) o '0' (inactivo)
+        Estado: String(this.estado),
+        Disponible: String(this.disponible),
       }
 
       // Usamos el ProductoController en el backend: api/Producto
@@ -146,10 +178,13 @@ export default {
           // limpiar formulario
           this.nombre = ''
           this.descripcion = ''
+          this.marca = ''
           this.precio = null
           this.cantidad = null
+          this.motivo = ''
           this.categoriaId = ''
           this.estado = 'A'
+          this.disponible = '1'
         })
         .catch((err) => {
           const msg = err?.response?.data?.message || err.message || 'Error al guardar producto.'
