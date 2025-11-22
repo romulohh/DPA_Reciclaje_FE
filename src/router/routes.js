@@ -13,8 +13,8 @@ const routes = [
     component: () => import('src/pages/auth/RegisterForm.vue'),
   },
   {
-    path: '/category',
-    component: () => import("src/pages/category/CategoryForm.vue"),
+    path: '/campania',
+    component: () => import("src/pages/campania/CampaniaForm.vue"),
   },
 
   // Always leave this as last one,
