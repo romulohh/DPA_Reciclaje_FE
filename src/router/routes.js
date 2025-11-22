@@ -16,6 +16,10 @@ const routes = [
     path: '/campania',
     component: () => import("src/pages/campania/CampaniaForm.vue"),
   },
+  {
+    path: '/productoform',
+    component: () => import('src/pages/productoform/ProductoForm.vue'),
+  },
 
   // Always leave this as last one,
   // but you can also remove it
