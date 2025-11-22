@@ -9,14 +9,7 @@
       <form class="login-form" id="loginForm" @submit.prevent="IniciarSesion" novalidate>
         <div class="form-group">
           <div class="input-wrapper">
-            <input
-              v-model="email"
-              type="email"
-              id="email"
-              name="email"
-              required
-              autocomplete="email"
-            />
+            <input v-model="email" type="email" id="email" name="email" required autocomplete="email" />
             <label for="email">Correo electrónico</label>
           </div>
           <span class="error-message" id="emailError"></span>
@@ -33,12 +26,7 @@
               autocomplete="current-password"
             />
             <label for="password">Contraseña</label>
-            <button
-              type="button"
-              class="password-toggle"
-              id="passwordToggle"
-              aria-label="Toggle password visibility"
-            >
+            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
               <span class="eye-icon"></span>
             </button>
           </div>
@@ -81,8 +69,7 @@
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: #f8fafc;
   min-height: 100vh;
   display: flex;

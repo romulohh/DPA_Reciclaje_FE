@@ -9,14 +9,7 @@
       <form class="login-form" id="registerForm" @submit.prevent="IniciarRegistro" novalidate>
         <div class="form-group" :class="{ error: errors.nombres }">
           <div class="input-wrapper">
-            <input
-              v-model="nombres"
-              type="text"
-              id="nombres"
-              name="nombres"
-              required
-              autocomplete="given-name"
-            />
+            <input v-model="nombres" type="text" id="nombres" name="nombres" required autocomplete="given-name" />
             <label for="nombres">Nombres</label>
           </div>
           <span class="error-message" v-if="errors.nombres">{{ errors.nombres }}</span>
@@ -39,14 +32,7 @@
 
         <div class="form-group" :class="{ error: errors.email }">
           <div class="input-wrapper">
-            <input
-              v-model="email"
-              type="email"
-              id="email"
-              name="email"
-              required
-              autocomplete="email"
-            />
+            <input v-model="email" type="email" id="email" name="email" required autocomplete="email" />
             <label for="email">Correo electrónico</label>
           </div>
           <span class="error-message" v-if="errors.email">{{ errors.email }}</span>
@@ -91,7 +77,7 @@
           <span class="error-message" v-if="errors.direccion">{{ errors.direccion }}</span>
         </div>
 
-        <button @click="IniciarRegistro" type="submit">
+        <button @click="IniciarRegistro" type="submit" class="login-btn">
           <span class="btn-text">Registrarse</span>
           <span class="btn-loader"></span>
         </button>
@@ -117,8 +103,7 @@
 }
 
 body {
-  font-family:
-    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   background: #f8fafc;
   min-height: 100vh;
   display: flex;
