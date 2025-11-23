@@ -10,41 +10,23 @@
         <div class="form-group">
           <div class="input-wrapper">
             <input v-model="email" type="email" id="email" name="email" required autocomplete="email" />
-            <label for="email">Correo electrónico</label>
+            <label for="email">Email</label>
           </div>
           <span class="error-message" id="emailError"></span>
         </div>
 
         <div class="form-group">
           <div class="input-wrapper password-wrapper">
-            <input
-              v-model="password"
-              type="password"
-              id="password"
-              name="password"
-              required
-              autocomplete="current-password"
-            />
+            <input v-model="password" :type="showPassword ? 'text' : 'password'" id="password" name="password" required/>
             <label for="password">Contraseña</label>
-            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility">
-              <span class="eye-icon"></span>
+            <button type="button" class="password-toggle" id="passwordToggle" aria-label="Toggle password visibility" @click="togglePassword">
+              <span class="eye-icon" :class="{ 'show-password': showPassword }"></span>
             </button>
           </div>
           <span class="error-message" id="passwordError"></span>
         </div>
 
-        <div class="form-options">
-          <label class="remember-wrapper">
-            <input type="checkbox" id="remember" name="remember" />
-            <span class="checkbox-label">
-              <span class="checkmark"></span>
-              Recordarme
-            </span>
-          </label>
-          <a href="#" class="forgot-password">¿Olvidó su contraseña?</a>
-        </div>
-
-        <button @click="IniciarSesion" type="submit" class="login-btn">
+        <button type="submit" class="login-btn">
           <span class="btn-text">Iniciar sesión</span>
           <span class="btn-loader"></span>
         </button>
@@ -141,7 +123,7 @@ body {
   color: transparent;
 }
 
-.input-wrapper label {
+/* .input-wrapper label {
   position: absolute;
   left: 16px;
   top: 12px;
@@ -150,20 +132,37 @@ body {
   transition: all 0.2s ease;
   pointer-events: none;
   transform-origin: left top;
+} */
+
+/* .input-wrapper input:focus,
+.input-wrapper input:valid,
+.input-wrapper input.has-value {
+  border-color: #6366f1;
+} */
+
+/* .input-wrapper input:focus + label,
+.input-wrapper input:valid + label,
+.input-wrapper input.has-value + label {
+  transform: translateY(-8px) scale(0.675);
+  color: #6366f1;
+  font-weight: 500;
+} */
+
+.input-wrapper label {
+  position: absolute;
+  left: 16px;
+  top: 2px;
+  pointer-events: none;
+  transform-origin: left top;
+  color: #6366f1;
+  font-weight: 500;
+  font-size: 10px;
 }
 
 .input-wrapper input:focus,
 .input-wrapper input:valid,
 .input-wrapper input.has-value {
   border-color: #6366f1;
-}
-
-.input-wrapper input:focus + label,
-.input-wrapper input:valid + label,
-.input-wrapper input.has-value + label {
-  transform: translateY(-8px) scale(0.675);
-  color: #6366f1;
-  font-weight: 500;
 }
 
 /* Password Toggle */
@@ -463,9 +462,13 @@ export default {
     return {
       email: '',
       password: '',
+      showPassword: false,
     }
   },
   methods: {
+    togglePassword() {
+      this.showPassword = !this.showPassword
+    },
     IniciarSesion() {
       let endpointURL = 'api/usuario/signin'
       let payload = {
@@ -495,6 +498,6 @@ export default {
           })
         })
     },
-  },
+  }
 }
 </script>
