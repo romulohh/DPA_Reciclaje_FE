@@ -12,6 +12,17 @@ const api = axios.create({ baseURL: 'http://localhost:5079' })
 export default defineBoot(({ app }) => {
   // for use inside Vue files (Options API) through this.$axios and this.$api
 
+    // 🔥 Interceptor para enviar token en todas las peticiones
+  api.interceptors.request.use(config => {
+    const token = JSON.parse(localStorage.getItem('token'))
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+
+    return config
+  })
+
   app.config.globalProperties.$axios = axios
   // ^ ^ ^ this will allow you to use this.$axios (for Vue Options API form)
   //       so you won't necessarily have to import axios in each vue file
