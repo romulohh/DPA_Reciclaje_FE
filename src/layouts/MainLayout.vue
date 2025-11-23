@@ -30,6 +30,18 @@ import EssentialLink from 'components/EssentialLink.vue'
 
 const linksList = [
   {
+    title: 'Campaña',
+    caption: 'Ir a campañas',
+    icon: 'campaign',
+    to: '/campania',
+  },
+  {
+    title: 'Producto',
+    caption: 'Ir a Productos',
+    icon: 'inventory_2',
+    to: '/productoform',
+  },
+  {
     title: 'Docs',
     caption: 'quasar.dev',
     icon: 'school',
