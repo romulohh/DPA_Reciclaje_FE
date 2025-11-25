@@ -4,14 +4,14 @@
 
     <!-- BOTÓN QUE ABRE EL DIALOG -->
     <div class="btn-area">
-      <q-btn color="primary" label="Registrar campaña" @click="dialog = true" />
+      <q-btn color="primary" label="Registrar campaña" @click="abrirNuevo" />
     </div>
 
     <!-- DIALOG -->
     <q-dialog v-model="dialog" persistent>
       <q-card style="min-width: 50%; padding: 20px;">
         <q-card-section>
-          <h3 class="title">Registrar Campaña</h3>
+          <h3 class="title">{{ isEditing ? 'Editar Campaña' : 'Registrar Campaña' }}</h3>
         </q-card-section>
 
         <q-card-section>
@@ -103,8 +103,8 @@
 
         <!-- BOTONES -->
         <q-card-actions align="right">
-          <q-btn flat label="Cancelar" color="negative" @click="dialog = false" />
-          <q-btn label="Guardar" color="primary" @click="guardarCampania" />
+          <q-btn flat label="Cancelar" color="negative" @click="dialog = false; limpiarFormulario()" />
+          <q-btn :label="isEditing ? 'Actualizar' : 'Guardar'" color="primary" @click="guardarCampania" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -122,7 +122,8 @@
           <th>Descripción</th>
           <th>Fecha Inicio</th>
           <th>Fecha Fin</th>
-          <th>ID Distrito</th>
+            <th>ID Distrito</th>
+            <th>Acciones</th>
         </tr>
       </thead>
 
@@ -134,6 +135,12 @@
           <td>{{ formatFecha(item.fechaInicio) }}</td>
           <td>{{ formatFecha(item.fechaFin) }}</td>
           <td>{{ item.idDistrito }}</td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <q-btn dense flat round color="primary" icon="edit" @click="editarCampania(item)" />
+              <q-btn dense flat round color="negative" icon="delete" @click="eliminarCampania(item.idCampania)" />
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -161,6 +168,10 @@ export default {
       campanias: [],
       loading: false,
       dialog: false ,
+
+      // editing state
+      isEditing: false,
+      editingId: null,
 
       departamentos: [],
       provincias: [],
@@ -269,24 +280,36 @@ export default {
         idDistrito: this.distritoSeleccionado,
         idUsuario: 1, // Provisional hasta que tengas auth
       };
+      // If we're editing an existing campaign, call PUT, otherwise POST
+      if (this.isEditing && this.editingId != null) {
+        this.$api
+          .put(`api/campania/${this.editingId}`, payload)
+          .then(() => {
+            this.$q.notify({ type: "positive", message: "Campaña actualizada correctamente" });
+            this.dialog = false;
+            this.isEditing = false;
+            this.editingId = null;
+            this.limpiarFormulario();
+            this.getCampanias();
+          })
+          .catch((err) => {
+            this.$q.notify({ type: "negative", message: "Error al actualizar campaña" });
+            console.error(err);
+          });
+
+        return;
+      }
 
       this.$api
         .post("api/campania", payload)
         .then(() => {
-          this.$q.notify({
-            type: "positive",
-            message: "Campaña registrada correctamente",
-          });
-
+          this.$q.notify({ type: "positive", message: "Campaña registrada correctamente" });
           this.dialog = false;
           this.limpiarFormulario();
           this.getCampanias();
         })
         .catch((err) => {
-          this.$q.notify({
-            type: "negative",
-            message: "Error al registrar campaña",
-          });
+          this.$q.notify({ type: "negative", message: "Error al registrar campaña" });
           console.error(err);
         });
     },
@@ -297,6 +320,52 @@ export default {
       this.fecini = "";
       this.fecfin = "";
       this.idDistrito = 0;
+      // reset editing state
+      this.isEditing = false;
+      this.editingId = null;
+    },
+
+    editarCampania(campania) {
+      // open dialog and prefill with values from the selected campaign
+      this.isEditing = true;
+      this.editingId = campania.idCampania;
+      this.titulo = campania.título || campania.titulo || "";
+      this.descripcion = campania.descripcion || "";
+      this.fecini = campania.fechaInicio ? campania.fechaInicio.split("T")[0] : "";
+      this.fecfin = campania.fechaFin ? campania.fechaFin.split("T")[0] : "";
+
+      // Try to set district selections if we have nested data, otherwise just set id
+      this.distritoSeleccionado = campania.idDistrito || "";
+
+      this.dialog = true;
+    },
+
+    abrirNuevo() {
+      this.limpiarFormulario();
+      this.isEditing = false;
+      this.editingId = null;
+      this.dialog = true;
+    },
+
+    eliminarCampania(id) {
+      this.$q.dialog({
+        title: 'Eliminar campaña',
+        message: '¿Está seguro de que desea eliminar esta campaña? Esta acción no se puede deshacer.',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        this.$api.delete(`api/campania/${id}`)
+          .then(() => {
+            this.$q.notify({ type: 'positive', message: 'Campaña eliminada correctamente' });
+            this.getCampanias();
+          })
+          .catch((err) => {
+            this.$q.notify({ type: 'negative', message: 'Error al eliminar campaña' });
+            console.error(err);
+          })
+      }).onCancel(() => {
+        // user cancelled
+      });
     },
 
     formatFecha(fecha) {
