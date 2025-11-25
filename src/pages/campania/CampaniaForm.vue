@@ -2,40 +2,112 @@
   <div class="card">
     <h2 class="title">Registro de Campañas</h2>
 
-    <!-- FORMULARIO -->
-    <div class="formulario">
-      <div class="input-group">
-        <label for="titulo">Título</label>
-        <input v-model="titulo" type="text" id="titulo" required />
-      </div>
-
-      <div class="input-group">
-        <label for="descripcion">Descripción</label>
-        <input v-model="descripcion" type="text" id="descripcion" required />
-      </div>
-
-      <div class="input-group">
-        <label for="fecini">Fecha Inicio</label>
-        <input v-model="fecini" type="date" id="fecini" required />
-      </div>
-
-      <div class="input-group">
-        <label for="fecfin">Fecha Fin</label>
-        <input v-model="fecfin" type="date" id="fecfin" required />
-      </div>
-
-      <div class="input-group">
-        <label for="distrito">ID Distrito</label>
-        <input v-model="idDistrito" type="number" id="distrito" required />
-      </div>
-    </div>
-
-    <!-- BOTÓN GUARDAR -->
+    <!-- BOTÓN QUE ABRE EL DIALOG -->
     <div class="btn-area">
-      <button class="btn-guardar" @click="guardarCampania">
-        Guardar
-      </button>
+      <q-btn color="primary" label="Registrar campaña" @click="dialog = true" />
     </div>
+
+    <!-- DIALOG -->
+    <q-dialog v-model="dialog" persistent>
+      <q-card style="min-width: 50%; padding: 20px;">
+        <q-card-section>
+          <h3 class="title">Registrar Campaña</h3>
+        </q-card-section>
+
+        <q-card-section>
+          <!-- FORMULARIO -->
+          <div class="formulario">
+            <div class="input-group">
+              <label for="titulo">Título</label>
+              <input v-model="titulo" type="text" id="titulo" required />
+            </div>
+
+            <div class="input-group">
+              <label for="descripcion">Descripción</label>
+              <input v-model="descripcion" type="text" id="descripcion" required />
+            </div>
+
+            <div class="input-group">
+              <label for="fecini">Fecha Inicio</label>
+              <input v-model="fecini" type="date" id="fecini" required />
+            </div>
+
+            <div class="input-group">
+              <label for="fecfin">Fecha Fin</label>
+              <input v-model="fecfin" type="date" id="fecfin" required />
+            </div>
+
+            <!-- DEPARTAMENTO -->
+            <div class="input-group">
+              <label for="departamento">Departamento</label>
+              <select 
+                id="departamento" 
+                v-model="departamentoSeleccionado" 
+                @change="onDepartamentoChange"
+              >
+                <option value="">Seleccione departamento</option>
+                <option 
+                  v-for="d in departamentos" 
+                  :key="d.idDepartamento" 
+                  :value="d.idDepartamento"
+                >
+                  {{ d.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <!-- PROVINCIA -->
+            <div class="input-group">
+              <label for="provincia">Provincia</label>
+              <select 
+                id="provincia" 
+                v-model="provinciaSeleccionada" 
+                @change="onProvinciaChange"
+                :disabled="!provincias.length"
+              >
+                <option value="">Seleccione provincia</option>
+                <option 
+                  v-for="p in provincias" 
+                  :key="p.idProvincia" 
+                  :value="p.idProvincia"
+                >
+                  {{ p.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <!-- DISTRITO -->
+            <div class="input-group">
+              <label for="distrito">Distrito</label>
+              <select 
+                id="distrito" 
+                v-model="distritoSeleccionado"
+                :disabled="!distritos.length"
+              >
+                <option value="">Seleccione distrito</option>
+                <option 
+                  v-for="t in distritos" 
+                  :key="t.idDistrito" 
+                  :value="t.idDistrito"
+                >
+                  {{ t.nombre }}
+                </option>
+              </select>
+            </div>
+
+
+            
+            
+          </div>
+        </q-card-section>
+
+        <!-- BOTONES -->
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="negative" @click="dialog = false" />
+          <q-btn label="Guardar" color="primary" @click="guardarCampania" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- LISTADO -->
     <h2 class="title" style="margin-top: 40px;">Listado de Campañas</h2>
@@ -88,6 +160,14 @@ export default {
       // tabla
       campanias: [],
       loading: false,
+      dialog: false ,
+
+      departamentos: [],
+      provincias: [],
+      distritos: [],
+      departamentoSeleccionado: '',
+      provinciaSeleccionada: '',
+      distritoSeleccionado: '',
     };
   },
 
@@ -103,13 +183,90 @@ export default {
         .finally(() => (this.loading = false));
     },
 
+    // lenar los combos
+    fetchDepartamentos() {
+      this.$api
+        .get('api/Departamento')
+        .then((res) => {
+          this.departamentos = Array.isArray(res.data) ? res.data : []
+        })
+        .catch((err) => {
+          const msg = err?.response?.data?.message || err.message || 'No se pudieron cargar departamentos.'
+          this.$q.notify({ type: 'negative', position: 'top', message: msg })
+        })
+    },
+    fetchProvincias() {
+      if (!this.departamentoSeleccionado) {
+        this.provincias = []
+        return
+      }
+      // Intentar pedir al backend filtrando por idDepartamento
+      this.$api
+        .get('api/Provincia/byDepartamento/' + this.departamentoSeleccionado )
+        .then((res) => {
+          this.provincias = Array.isArray(res.data) ? res.data : []
+        })
+        .catch((err) => {
+          // fallback: intentar cargar todo y filtrar (por si backend no soporta param)
+          this.$api
+            .get('api/Provincia')
+            .then((r) => {
+              const all = Array.isArray(r.data) ? r.data : []
+              this.provincias = all.filter((p) => String(p.idDepartamento) === String(this.departamentoSeleccionado))
+            })
+            .catch(() => {
+              const msg = err?.response?.data?.message || err.message || 'No se pudieron cargar provincias.'
+              this.$q.notify({ type: 'negative', position: 'top', message: msg })
+            })
+        })
+    },
+    fetchDistritos() {
+      if (!this.provinciaSeleccionada) {
+        this.distritos = []
+        return
+      }
+      this.$api
+        .get('api/Distrito/byProvincia/' + this.provinciaSeleccionada )
+        .then((res) => {
+          this.distritos = Array.isArray(res.data) ? res.data : []
+        })
+        .catch((err) => {
+          // fallback: cargar todo y filtrar
+          this.$api
+            .get('api/Distrito')
+            .then((r) => {
+              const all = Array.isArray(r.data) ? r.data : []
+              this.distritos = all.filter((t) => String(t.idProvincia) === String(this.provinciaSeleccionada))
+            })
+            .catch(() => {
+              const msg = err?.response?.data?.message || err.message || 'No se pudieron cargar distritos.'
+              this.$q.notify({ type: 'negative', position: 'top', message: msg })
+            })
+        })
+    },
+
+    // cambiar la direccion
+    onDepartamentoChange() {
+      this.provinciaSeleccionada = ''
+      this.distritoSeleccionado = ''
+      this.provincias = []
+      this.distritos = []
+      this.fetchProvincias()
+    },
+
+    onProvinciaChange() {
+      this.distritoSeleccionado = ''
+      this.distritos = []
+      this.fetchDistritos()
+    },
+
     guardarCampania() {
       const payload = {
         título: this.titulo,
         descripcion: this.descripcion,
         fechaInicio: this.fecini,
         fechaFin: this.fecfin,
-        idDistrito: this.idDistrito,
+        idDistrito: this.distritoSeleccionado,
         idUsuario: 1, // Provisional hasta que tengas auth
       };
 
@@ -121,6 +278,7 @@ export default {
             message: "Campaña registrada correctamente",
           });
 
+          this.dialog = false;
           this.limpiarFormulario();
           this.getCampanias();
         })
@@ -148,6 +306,7 @@ export default {
 
   mounted() {
     this.getCampanias();
+    this.fetchDepartamentos();
   },
 };
 </script>
