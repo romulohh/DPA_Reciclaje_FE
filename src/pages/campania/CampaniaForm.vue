@@ -424,4 +424,33 @@ input:focus {
   text-align: center;
   padding: 1rem;
 }
+
+/* -------- ESTILO PARA SELECT (COMBOBOX) -------- */
+select {
+  padding: 0.7rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #334155;
+}
+
+select:focus {
+  border-color: #6366f1;
+  outline: none;
+}
+
+select:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Para que se vea igual cuando el mouse está encima */
+select:hover:not(:disabled) {
+  border-color: #94a3f6;
+}
+
 </style>
