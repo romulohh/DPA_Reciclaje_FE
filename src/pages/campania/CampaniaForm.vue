@@ -122,8 +122,8 @@
           <th>Descripción</th>
           <th>Fecha Inicio</th>
           <th>Fecha Fin</th>
-            <th>ID Distrito</th>
-            <th>Acciones</th>
+          <th>Distrito</th>
+          <th>Acciones</th>
         </tr>
       </thead>
 
@@ -134,7 +134,7 @@
           <td>{{ item.descripcion }}</td>
           <td>{{ formatFecha(item.fechaInicio) }}</td>
           <td>{{ formatFecha(item.fechaFin) }}</td>
-          <td>{{ item.idDistrito }}</td>
+          <td>{{ item.distrito.nombre }}</td>
           <td>
             <div style="display:flex; gap:6px;">
               <q-btn dense flat round color="primary" icon="edit" @click="editarCampania(item)" />
@@ -348,6 +348,7 @@ export default {
     },
 
     eliminarCampania(id) {
+      console.log("Eliminar campaña con ID:", id);
       this.$q.dialog({
         title: 'Eliminar campaña',
         message: '¿Está seguro de que desea eliminar esta campaña? Esta acción no se puede deshacer.',
