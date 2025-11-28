@@ -1,11 +1,10 @@
 <template>
   <div class="card">
-    <h2 class="title">Registro de Campañas</h2>
 
     <!-- BOTÓN QUE ABRE EL DIALOG -->
-    <div class="btn-area">
-      <q-btn color="primary" label="Registrar campaña" @click="abrirNuevo" />
-    </div>
+    
+      <q-btn color="primary" label="Registrar nueva campaña" @click="abrirNuevo" />
+    
 
     <!-- DIALOG -->
     <q-dialog v-model="dialog" persistent>
