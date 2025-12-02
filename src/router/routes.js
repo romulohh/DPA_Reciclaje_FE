@@ -2,7 +2,17 @@ const routes = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
-    children: [{ path: '', component: () => import('pages/IndexPage.vue') }],
+    children: [
+      { path: '', component: () => import('pages/IndexPage.vue') },
+      {
+        path: '/campania',
+        component: () => import("src/pages/campania/CampaniaForm.vue"),
+      },
+      {
+        path: '/productoform',
+        component: () => import('src/pages/productoform/ProductoForm.vue'),
+      },
+    ],
   },
   {
     path: '/login',
@@ -21,6 +31,10 @@ const routes = [
     name: '/ProductoDetalle',
     component: () => import('src/pages/front/ProductoDetalle.vue'),
   },
+    path: '/productoform',
+    component: () => import('src/pages/productoform/ProductoForm.vue'),
+  },
+
   // Always leave this as last one,
   // but you can also remove it
   {
