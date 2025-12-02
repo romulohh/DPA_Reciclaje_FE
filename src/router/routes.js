@@ -23,6 +23,14 @@ const routes = [
     component: () => import('src/pages/auth/RegisterForm.vue'),
   },
   {
+    path: '/home',
+    component: () => import('src/pages/front/PrincipalForm.vue'),
+  },
+  {
+    path: '/ProductoDetalle/:id',
+    name: '/ProductoDetalle',
+    component: () => import('src/pages/front/ProductoDetalle.vue'),
+  },
     path: '/productoform',
     component: () => import('src/pages/productoform/ProductoForm.vue'),
   },
