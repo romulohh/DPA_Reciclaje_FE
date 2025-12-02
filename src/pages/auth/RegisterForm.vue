@@ -1,4 +1,11 @@
 <template>
+  <!-- <div class="q-pa-md q-gutter-sm encabezado">
+    <q-breadcrumbs>
+      <q-breadcrumbs-el label="Inicio" icon="home" to="/home" />
+    </q-breadcrumbs>
+  </div> -->
+  <q-layout view="hHr lpR fFf">
+  <HeaderForm />
   <div class="register-container">
     <div class="register-card">
       <div class="register-header">
@@ -124,10 +131,20 @@
       </div>
     </div>
   </div>
+  </q-layout>
 </template>
 
 <style>
 /* Basic register Form - Clean & Simple */
+.encabezado {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: white; /* Para que el contenido no quede detrás */
+  padding-bottom: 10px; /* Espacio para que el contenido no quede oculto */
+  z-index: 1000; /* Para asegurar que esté por encima de otros elementos */
+}
 
 * {
   margin: 0;
@@ -524,8 +541,12 @@ body {
 </style>
 
 <script>
+import HeaderForm from 'src/components/HeaderForm.vue'
 export default {
   name: 'RegisterForm',
+  components: {
+    HeaderForm,
+  },
   data() {
     return {
       nombres: '',

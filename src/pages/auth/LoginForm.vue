@@ -1,4 +1,12 @@
 <template>
+  <!-- <div class="q-pa-md q-gutter-sm encabezado">
+    <q-breadcrumbs>
+      <q-breadcrumbs-el label="Inicio" icon="home" to="/home" />
+    </q-breadcrumbs>
+  </div> -->
+  <q-layout view="hHr lpR fFf">
+  <HeaderForm />
+
   <div class="login-container">
     <div class="login-card">
       <div class="login-header">
@@ -40,9 +48,19 @@
       </div>
     </div>
   </div>
+</q-layout>
 </template>
 <style>
 /* Basic Login Form - Clean & Simple */
+.encabezado {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background-color: white; /* Para que el contenido no quede detrás */
+  padding-bottom: 10px; /* Espacio para que el contenido no quede oculto */
+  z-index: 1000; /* Para asegurar que esté por encima de otros elementos */
+}
 
 * {
   margin: 0;
@@ -456,18 +474,50 @@ body {
 }
 </style>
 <script>
+import HeaderForm from 'src/components/HeaderForm.vue'
 export default {
   name: 'LoginForm',
+  components: {
+    HeaderForm,
+  },
   data() {
     return {
       email: '',
       password: '',
       showPassword: false,
+      idUsuario: null,
+      idCarrito: null
     }
   },
   methods: {
     togglePassword() {
       this.showPassword = !this.showPassword
+    },
+    LeeCarritoActivo() {
+      this.tieneCarritoActivo = false
+      let endpointURL = `/api/Carrito/active/${this.idUsuario}`
+      let token = localStorage.getItem('token')
+      this.$api
+        .get(endpointURL, {
+          headers: {
+            Authorization: `Bearer ${JSON.parse(token)}`,
+          },
+        })
+        .then((response) => {
+          console.log('Lee carrito: ', response.data)
+          if (response.data.length > 0) {
+            console.log('Tiene carrito activo: ', response.data[0].idCarrito)
+            this.idCarrito = response.data[0].idCarrito
+            localStorage.setItem('idCarrito', response.data[0].idCarrito)
+          }
+          else {
+            this.idCarrito = null
+            console.log('No tiene carrito activo: ', this.idUsuario)
+          }
+        })
+        .catch((error) => {
+          console.error('Error al cargar carrito activo: ', error)
+        })
     },
     IniciarSesion() {
       let endpointURL = 'api/usuario/signin'
@@ -486,8 +536,12 @@ export default {
           })
           // Guardar el token en el almacenamiento local
           localStorage.setItem('token', JSON.stringify(response.data.token))
+          localStorage.setItem('username', response.data.nombres)
+          localStorage.setItem('idUsuario', response.data.idUsuario)
+          this.idUsuario = response.data.idUsuario
+          this.LeeCarritoActivo()
           // Redireccionar a product
-          this.$router.push('/')
+          this.$router.push('/home')
         })
         .catch((error) => {
           // Aquí puedes manejar los errores, como mostrar mensajes de error al usuario
