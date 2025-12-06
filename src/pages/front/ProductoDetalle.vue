@@ -59,7 +59,39 @@
                 lazy-rules :rules="[val => !!val || 'El comentario no puede estar vacío']" :disable="comentarioGuardado" />
 
               <q-btn v-if="isLoggedIn" type="submit" class="q-mt-md" label="Guardar comentario" color="primary" icon="send" :disable="comentarioGuardado" />
-            </form>
+          </form>
+
+          <div v-if="comentarios.length > 0" class="q-mt-xl">
+            <div class="text-h6 q-mb-md">Comentarios del producto</div>
+
+            <q-card v-for="c in comentarios" :key="c.idComentario" class="q-mb-md">
+              <q-card-section>
+                <div class="text-subtitle2">
+                  <b>{{ c.usuarioComprador?.nombres || 'Usuario' }}</b>
+                </div>
+
+                <q-rating
+                  :model-value="c.calificacion === 'X' ? 0 : Number(c.calificacion)"
+                  max="5"
+                  size="1.5em"
+                  color="amber"
+                  icon="star"
+                  readonly
+                />
+
+                <div class="q-mt-sm">{{ c.texto }}</div>
+
+                <div class="text-caption text-grey-7 q-mt-sm">
+                  Publicado en: {{ new Date(c.fechaRegistro).toLocaleString() }}
+                </div>
+              </q-card-section>
+            </q-card>
+          </div>
+
+          <div v-else class="q-mt-lg text-grey">
+            No hay comentarios todavía.
+          </div>
+
 
         </div>
 
@@ -103,7 +135,8 @@ export default {
       esFavorito: false,
       comentarioGuardado: false,
       calificacion: 0, // valor inicial, entre 0 y 5
-      valorClasificacion: ''
+      valorClasificacion: '',
+      comentarios: []
     }
   },
   mounted() {
@@ -125,6 +158,7 @@ export default {
         .then((response) => {
           this.product = response.data
           this.loadFavorito()
+          this.loadComentarios() 
           console.log('Producto cargado: ', this.product)
         })
         .catch((error) => {
@@ -133,6 +167,25 @@ export default {
     },
     getImageUrl(nombreArchivo) {
       return new URL(`/src/assets/images/producto/${nombreArchivo}`, import.meta.url).href
+    },
+
+    async loadComentarios() {
+      try {
+        let endpoint = `/api/Comentario/byProducto?idProducto=${this.product.idProducto}`
+        let token = localStorage.getItem('token')
+
+        const response = await this.$api.get(endpoint, {
+          headers: {
+            Authorization: `Bearer ${JSON.parse(token)}`
+          }
+        })
+
+        this.comentarios = response.data
+        console.log("Comentarios cargados:", this.comentarios)
+
+      } catch (error) {
+        console.error("Error al cargar comentarios:", error)
+      }
     },
     mostrarMotivo(valor) {
       switch (valor) {
@@ -179,10 +232,13 @@ export default {
         })
         .then(() => {
           console.log('Comentario guardado')
+          this.loadComentarios();
+          this.comentario = "";
         })
         .catch((error) => {
           console.error('Error al guardar comentario: ', error)
         })
+        
       this.$q.notify({ type: 'positive', position: 'top', message: 'Comentario guardado' })
       this.comentarioGuardado = true   // deshabilita input y botón
     },
