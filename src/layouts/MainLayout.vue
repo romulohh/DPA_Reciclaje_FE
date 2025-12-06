@@ -45,7 +45,7 @@ const linksList = [
     icon: 'inventory_2',
     to: '/admin/productoform',
   },
-  {
+  /*{
     title: 'Docs',
     caption: 'quasar.dev',
     icon: 'school',
@@ -86,7 +86,7 @@ const linksList = [
     caption: 'Community Quasar projects',
     icon: 'favorite',
     link: 'https://awesome.quasar.dev',
-  },
+  },*/
 ]
 
 const leftDrawerOpen = ref(false)

@@ -9,14 +9,14 @@
       <form class="login-form" @submit.prevent="guardarProducto" novalidate>
         <div class="form-group">
           <div class="input-wrapper">
-            <input v-model="nombre" type="text" id="nombre" name="nombre" required autocomplete="name" />
+            <input v-model="nombre" :class="{ 'has-value': !!nombre }" type="text" id="nombre" name="nombre" required autocomplete="name" />
             <label for="nombre">Nombre</label>
           </div>
         </div>
 
         <div class="form-group">
           <div class="input-wrapper">
-            <input v-model="descripcion" type="text" id="descripcion" name="descripcion" required />
+            <input v-model="descripcion" :class="{ 'has-value': !!descripcion }" type="text" id="descripcion" name="descripcion" required />
             <label for="descripcion">Descripción</label>
           </div>
         </div>
@@ -24,27 +24,20 @@
         <div style="display:flex; gap:16px;">
           <div class="form-group" style="flex:1;">
             <div class="input-wrapper">
-              <input v-model.number="precio" type="number" id="precio" name="precio" step="0.01" required />
+              <input v-model.number="precio" :class="{ 'has-value': !!precio }" type="number" id="precio" name="precio" step="0.01" required />
               <label for="precio">Precio</label>
             </div>
           </div>
 
           <div class="form-group" style="flex:1;">
             <div class="input-wrapper">
-              <input v-model.number="cantidad" type="number" id="cantidad" name="cantidad" required />
+              <input v-model.number="cantidad" :class="{ 'has-value': !!cantidad }" type="number" id="cantidad" name="cantidad" required />
               <label for="cantidad">Cantidad</label>
             </div>
           </div>
         </div>
 
-        <div style="display:flex; gap:16px;">
-          <div class="form-group" style="flex:1;">
-          <div class="input-wrapper">
-            <select v-model="categoriaId" id="categoria" name="categoria" :disabled="loadingCategories">
-              <option value="">{{ loadingCategories ? 'Cargando categorías...' : 'Seleccione categoría' }}</option>
-              <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre || (c.raw && (c.raw.Nombre || c.raw.nombre)) || 'Sin nombre' }}</option>
-            </select>
-          </div>
+        
 
           <div class="form-group" style="flex:1;">
             <div class="input-wrapper">
@@ -52,6 +45,15 @@
               <label for="marca">Marca</label>
             </div>
           </div>
+
+          <div style="display:flex; gap:16px;">
+          <div class="form-group" style="flex:1;">
+          <div class="input-wrapper">
+            <select v-model="categoriaId" :class="{ 'has-value': !!categoria }" id="categoria" name="categoria" :disabled="loadingCategories">
+              <option value="">{{ loadingCategories ? 'Cargando categorías...' : 'Seleccione categoría' }}</option>
+              <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre || (c.raw && (c.raw.Nombre || c.raw.nombre)) || 'Sin nombre' }}</option>
+            </select>
+          </div>
           
           </div>
         </div>
@@ -60,7 +62,7 @@
 
           <div class="form-group" style="flex:1;">
             <div class="input-wrapper">
-              <select v-model="disponible" id="disponible" name="disponible">
+              <select v-model="disponible" :class="{ 'has-value': !!disponible }" id="disponible" name="disponible">
                 <option value="D">Disponible</option>
                 <option value="X">No disponible</option>
               </select>
@@ -69,7 +71,7 @@
 
           <div class="form-group" style="flex:1;">
             <div class="input-wrapper">
-              <select v-model="estado" id="estado" name="estado">
+              <select v-model="estado" :class="{ 'has-value': !!estado }" id="estado" name="estado">
                 <option value="N">Nuevo</option>
                 <option value="U">Usado</option>
               </select>
