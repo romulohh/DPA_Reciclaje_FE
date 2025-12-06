@@ -4,7 +4,7 @@
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
         <q-avatar>
-          <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" >
+          <img src="https://iili.io/fufxSr7.png" >
         </q-avatar>
 
         <q-toolbar-title> Recicla perú </q-toolbar-title>
