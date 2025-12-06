@@ -5,7 +5,39 @@
   </div>
 </template>
 
-<style></style>
+<style scoped>
+.distrito-filter {
+  width: 220px !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+}
+
+.distrito-filter :deep(.q-select) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.distrito-filter :deep(.q-field) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.distrito-filter :deep(.q-field__control) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.distrito-filter :deep(.q-field__native) {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+</style>
 
 <script>
 export default {

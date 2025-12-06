@@ -2,18 +2,18 @@
   <q-card class="product-card">
     <q-card-section>
       <q-img :src="getImageUrl(product.imagen)" alt="Imagen del producto" style="width: 100%; height: 200px; object-fit: contain; background-color: #f5f5f5;"/>
-      <q-icon v-if="esFavorito" name="favorite" color="red" size="25px" class="absolute-top-right q-ma-sm" />
+      <q-icon v-if="isLoggedIn && esFavorito" name="favorite" color="red" size="25px" class="absolute-top-right q-ma-sm" />
 
     </q-card-section>
     <q-card-section>
       <q-card-title style="font-size: 18px;"><b>{{ product.nombre }}</b></q-card-title>
       <div class="text-h7">Precio S/ {{ product.precio }}</div>
       <div class="text-h8">{{ product.usuario.distrito.nombre }} - {{ product.usuario.distrito.departamento.nombre }}</div>
-      <form @submit.prevent="agregarCarrito">
+      <!-- <form @submit.prevent="agregarCarrito">
         <div class="text-center">
           <q-btn v-if="isLoggedIn && product.motivo === 'V'" type="submit" color="primary" label="Agregar al carrito" />
         </div>
-      </form>
+      </form> -->
     </q-card-section>
   </q-card>
 </template>
@@ -118,8 +118,8 @@ export default {
           .catch((error) => {
             console.error('Error al crear carrito: ', error)
           })
-      }
       this.$q.notify({ type: 'positive', position: 'top', message: 'Carrito guardado' })
+    }
     },
   }
 }

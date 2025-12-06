@@ -9,14 +9,12 @@
     </q-toolbar-title>
     <div class="q-pa-md">
       <div class="q-gutter-md">
-        <div>
           <!-- Ícono de carrito visible solo si está activo -->
-          <q-icon v-if="tieneCarritoActivo" name="shopping_cart" color="primary" size="32px" class="q-mr-md" />
-        </div>
+          <q-icon v-if="isLoggedIn && tieneCarritoActivo" name="shopping_cart" color="secondary" size="32px" class="q-mr-md cursor-pointer" @click="$router.push('/carrito')"/>
 
         <q-btn color="secondary" label="Home" @click="$router.push('/home')" />
-        <q-btn color="secondary" label="Campañas" @click="$router.push('/campania')" />
-        <q-btn v-if="isLoggedIn" color="secondary" label="Dashboard" @click="$router.push('/')" />
+        <q-btn color="secondary" label="Campañas" @click="$router.push('/campaniafront')" />
+        <q-btn v-if="isLoggedIn" color="secondary" label="Dashboard" @click="$router.push('/admin')" />
         <q-btn v-if="!isLoggedIn" color="secondary" label="Iniciar sesión" @click="$router.push('/login')" />
         <q-btn v-else color="negative" label="Cerrar sesión" @click="logout" />
       </div>
@@ -33,7 +31,7 @@ export default {
     }
   },
   mounted() {
-    const idCarrito = localStorage.getItem('idCarrito')
+    let idCarrito = localStorage.getItem('idCarrito')
     if (idCarrito) {
       this.tieneCarritoActivo = true
     }
@@ -42,11 +40,15 @@ export default {
     isLoggedIn() {
       return !!localStorage.getItem('token')
     },
+    // tieneCarritoActivo() {
+    //   return !!localStorage.getItem('idCarrito')
+    // },
   },
   methods: {
     logout() {
       localStorage.removeItem('token')
       localStorage.removeItem('username')
+      localStorage.removeItem('idCarrito')
       window.location.reload()
     },
   },
