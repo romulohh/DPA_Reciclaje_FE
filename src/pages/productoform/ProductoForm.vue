@@ -37,28 +37,41 @@
           </div>
         </div>
 
-        <div class="form-group">
+        <div style="display:flex; gap:16px;">
+          <div class="form-group" style="flex:1;">
           <div class="input-wrapper">
             <select v-model="categoriaId" id="categoria" name="categoria" :disabled="loadingCategories">
               <option value="">{{ loadingCategories ? 'Cargando categorías...' : 'Seleccione categoría' }}</option>
               <option v-for="c in categorias" :key="c.id" :value="c.id">{{ c.nombre || (c.raw && (c.raw.Nombre || c.raw.nombre)) || 'Sin nombre' }}</option>
             </select>
           </div>
-        </div>
 
-        <div style="display:flex; gap:16px;">
           <div class="form-group" style="flex:1;">
             <div class="input-wrapper">
               <input v-model="marca" type="text" id="marca" name="marca" />
               <label for="marca">Marca</label>
             </div>
           </div>
+          
+          </div>
+        </div>
+        <div style="display:flex; gap:16px;">
+          
 
           <div class="form-group" style="flex:1;">
             <div class="input-wrapper">
               <select v-model="disponible" id="disponible" name="disponible">
-                <option value="1">Disponible</option>
-                <option value="0">No disponible</option>
+                <option value="D">Disponible</option>
+                <option value="X">No disponible</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-group" style="flex:1;">
+            <div class="input-wrapper">
+              <select v-model="estado" id="estado" name="estado">
+                <option value="N">Nuevo</option>
+                <option value="U">Usado</option>
               </select>
             </div>
           </div>
@@ -147,7 +160,8 @@ export default {
       categoriaId: '',
       categorias: [],
       loadingCategories: false,
-      disponible: '1',
+      disponible: 'D',
+      estado: 'N',
       loading: false,
 
       // Manejo de imágenes
@@ -242,8 +256,9 @@ export default {
           Cantidad: this.cantidad,
           Motivo: 'V', // Venta
           IdCategoria: this.categoriaId ? Number(this.categoriaId) : null,
-          Estado: 'A', // Activo
-          Disponible: String(this.disponible)
+          Estado: String(this.estado), // N NUEVO U USADO
+          Disponible: String(this.disponible),
+          IdUsuario: localStorage.getItem('idUsuario')
         }
 
         console.log('Payload a enviar:', payload)
