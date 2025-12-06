@@ -3,9 +3,13 @@
     <q-header elevated>
       <q-toolbar>
         <q-btn flat dense round icon="menu" aria-label="Menu" @click="toggleLeftDrawer" />
+        <q-avatar>
+          <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg" >
+        </q-avatar>
 
-        <q-toolbar-title> Quasar App </q-toolbar-title>
+        <q-toolbar-title> Recicla perú </q-toolbar-title>
 
+        <q-icon name="home" color="white" size="32px" class="q-mr-md cursor-pointer" @click="$router.push('/')"/>
         <div>Quasar v{{ $q.version }}</div>
       </q-toolbar>
     </q-header>
