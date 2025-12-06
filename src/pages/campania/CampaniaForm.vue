@@ -1,41 +1,112 @@
 <template>
   <div class="card">
-    <h2 class="title">Registro de Campañas</h2>
 
-    <!-- FORMULARIO -->
-    <div class="formulario">
-      <div class="input-group">
-        <label for="titulo">Título</label>
-        <input v-model="titulo" type="text" id="titulo" required />
-      </div>
+    <!-- BOTÓN QUE ABRE EL DIALOG -->
+    
+      <q-btn color="primary" label="Registrar nueva campaña" @click="abrirNuevo" />
+    
 
-      <div class="input-group">
-        <label for="descripcion">Descripción</label>
-        <input v-model="descripcion" type="text" id="descripcion" required />
-      </div>
+    <!-- DIALOG -->
+    <q-dialog v-model="dialog" persistent>
+      <q-card style="min-width: 50%; padding: 20px;">
+        <q-card-section>
+          <h3 class="title">{{ isEditing ? 'Editar Campaña' : 'Registrar Campaña' }}</h3>
+        </q-card-section>
 
-      <div class="input-group">
-        <label for="fecini">Fecha Inicio</label>
-        <input v-model="fecini" type="date" id="fecini" required />
-      </div>
+        <q-card-section>
+          <!-- FORMULARIO -->
+          <div class="formulario">
+            <div class="input-group">
+              <label for="titulo">Título</label>
+              <input v-model="titulo" type="text" id="titulo" required />
+            </div>
 
-      <div class="input-group">
-        <label for="fecfin">Fecha Fin</label>
-        <input v-model="fecfin" type="date" id="fecfin" required />
-      </div>
+            <div class="input-group">
+              <label for="descripcion">Descripción</label>
+              <input v-model="descripcion" type="text" id="descripcion" required />
+            </div>
 
-      <div class="input-group">
-        <label for="distrito">ID Distrito</label>
-        <input v-model="idDistrito" type="number" id="distrito" required />
-      </div>
-    </div>
+            <div class="input-group">
+              <label for="fecini">Fecha Inicio</label>
+              <input v-model="fecini" type="date" id="fecini" required />
+            </div>
 
-    <!-- BOTÓN GUARDAR -->
-    <div class="btn-area">
-      <button class="btn-guardar" @click="guardarCampania">
-        Guardar
-      </button>
-    </div>
+            <div class="input-group">
+              <label for="fecfin">Fecha Fin</label>
+              <input v-model="fecfin" type="date" id="fecfin" required />
+            </div>
+
+            <!-- DEPARTAMENTO -->
+            <div class="input-group">
+              <label for="departamento">Departamento</label>
+              <select 
+                id="departamento" 
+                v-model="departamentoSeleccionado" 
+                @change="onDepartamentoChange"
+              >
+                <option value="">Seleccione departamento</option>
+                <option 
+                  v-for="d in departamentos" 
+                  :key="d.idDepartamento" 
+                  :value="d.idDepartamento"
+                >
+                  {{ d.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <!-- PROVINCIA -->
+            <div class="input-group">
+              <label for="provincia">Provincia</label>
+              <select 
+                id="provincia" 
+                v-model="provinciaSeleccionada" 
+                @change="onProvinciaChange"
+                :disabled="!provincias.length"
+              >
+                <option value="">Seleccione provincia</option>
+                <option 
+                  v-for="p in provincias" 
+                  :key="p.idProvincia" 
+                  :value="p.idProvincia"
+                >
+                  {{ p.nombre }}
+                </option>
+              </select>
+            </div>
+
+            <!-- DISTRITO -->
+            <div class="input-group">
+              <label for="distrito">Distrito</label>
+              <select 
+                id="distrito" 
+                v-model="distritoSeleccionado"
+                :disabled="!distritos.length"
+              >
+                <option value="">Seleccione distrito</option>
+                <option 
+                  v-for="t in distritos" 
+                  :key="t.idDistrito" 
+                  :value="t.idDistrito"
+                >
+                  {{ t.nombre }}
+                </option>
+              </select>
+            </div>
+
+
+            
+            
+          </div>
+        </q-card-section>
+
+        <!-- BOTONES -->
+        <q-card-actions align="right">
+          <q-btn flat label="Cancelar" color="negative" @click="dialog = false; limpiarFormulario()" />
+          <q-btn :label="isEditing ? 'Actualizar' : 'Guardar'" color="primary" @click="guardarCampania" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- LISTADO -->
     <h2 class="title" style="margin-top: 40px;">Listado de Campañas</h2>
@@ -50,7 +121,8 @@
           <th>Descripción</th>
           <th>Fecha Inicio</th>
           <th>Fecha Fin</th>
-          <th>ID Distrito</th>
+          <th>Distrito</th>
+          <th>Acciones</th>
         </tr>
       </thead>
 
@@ -61,7 +133,13 @@
           <td>{{ item.descripcion }}</td>
           <td>{{ formatFecha(item.fechaInicio) }}</td>
           <td>{{ formatFecha(item.fechaFin) }}</td>
-          <td>{{ item.idDistrito }}</td>
+          <td>{{ item.distrito.nombre }}</td>
+          <td>
+            <div style="display:flex; gap:6px;">
+              <q-btn dense flat round color="primary" icon="edit" @click="editarCampania(item)" />
+              <q-btn dense flat round color="negative" icon="delete" @click="eliminarCampania(item.idCampania)" />
+            </div>
+          </td>
         </tr>
       </tbody>
     </table>
@@ -88,6 +166,18 @@ export default {
       // tabla
       campanias: [],
       loading: false,
+      dialog: false ,
+
+      // editing state
+      isEditing: false,
+      editingId: null,
+
+      departamentos: [],
+      provincias: [],
+      distritos: [],
+      departamentoSeleccionado: '',
+      provinciaSeleccionada: '',
+      distritoSeleccionado: '',
     };
   },
 
@@ -103,32 +193,122 @@ export default {
         .finally(() => (this.loading = false));
     },
 
+    // lenar los combos
+    fetchDepartamentos() {
+      this.$api
+        .get('api/Departamento')
+        .then((res) => {
+          this.departamentos = Array.isArray(res.data) ? res.data : []
+        })
+        .catch((err) => {
+          const msg = err?.response?.data?.message || err.message || 'No se pudieron cargar departamentos.'
+          this.$q.notify({ type: 'negative', position: 'top', message: msg })
+        })
+    },
+    fetchProvincias() {
+      if (!this.departamentoSeleccionado) {
+        this.provincias = []
+        return
+      }
+      // Intentar pedir al backend filtrando por idDepartamento
+      this.$api
+        .get('api/Provincia/byDepartamento/' + this.departamentoSeleccionado )
+        .then((res) => {
+          this.provincias = Array.isArray(res.data) ? res.data : []
+        })
+        .catch((err) => {
+          // fallback: intentar cargar todo y filtrar (por si backend no soporta param)
+          this.$api
+            .get('api/Provincia')
+            .then((r) => {
+              const all = Array.isArray(r.data) ? r.data : []
+              this.provincias = all.filter((p) => String(p.idDepartamento) === String(this.departamentoSeleccionado))
+            })
+            .catch(() => {
+              const msg = err?.response?.data?.message || err.message || 'No se pudieron cargar provincias.'
+              this.$q.notify({ type: 'negative', position: 'top', message: msg })
+            })
+        })
+    },
+    fetchDistritos() {
+      if (!this.provinciaSeleccionada) {
+        this.distritos = []
+        return
+      }
+      this.$api
+        .get('api/Distrito/byProvincia/' + this.provinciaSeleccionada )
+        .then((res) => {
+          this.distritos = Array.isArray(res.data) ? res.data : []
+        })
+        .catch((err) => {
+          // fallback: cargar todo y filtrar
+          this.$api
+            .get('api/Distrito')
+            .then((r) => {
+              const all = Array.isArray(r.data) ? r.data : []
+              this.distritos = all.filter((t) => String(t.idProvincia) === String(this.provinciaSeleccionada))
+            })
+            .catch(() => {
+              const msg = err?.response?.data?.message || err.message || 'No se pudieron cargar distritos.'
+              this.$q.notify({ type: 'negative', position: 'top', message: msg })
+            })
+        })
+    },
+
+    // cambiar la direccion
+    onDepartamentoChange() {
+      this.provinciaSeleccionada = ''
+      this.distritoSeleccionado = ''
+      this.provincias = []
+      this.distritos = []
+      this.fetchProvincias()
+    },
+
+    onProvinciaChange() {
+      this.distritoSeleccionado = ''
+      this.distritos = []
+      this.fetchDistritos()
+    },
+
     guardarCampania() {
       const payload = {
         título: this.titulo,
         descripcion: this.descripcion,
         fechaInicio: this.fecini,
         fechaFin: this.fecfin,
-        idDistrito: this.idDistrito,
+        idDistrito: this.distritoSeleccionado,
         idUsuario: 1, // Provisional hasta que tengas auth
       };
+      // If we're editing an existing campaign, call PUT, otherwise POST
+      if (this.isEditing && this.editingId != null) {
+        this.$api
+          .put(`api/campania/${this.editingId}`, payload)
+          .then(() => {
+            this.$q.notify({ type: "positive", message: "Campaña actualizada correctamente" });
+            this.dialog = false;
+            this.isEditing = false;
+            this.editingId = null;
+            this.limpiarFormulario();
+            this.getCampanias();
+          })
+          .catch((err) => {
+            this.$q.notify({ type: "negative", message: "Error al actualizar campaña" });
+            console.error(err);
+          });
+
+        return;
+      }
 
       this.$api
         .post("api/campania", payload)
         .then(() => {
-          this.$q.notify({
-            type: "positive",
-            message: "Campaña registrada correctamente",
-          });
-
+          this.$q.notify({ type: "positive", message: "Campaña registrada correctamente" });
+          this.dialog = false;
           this.limpiarFormulario();
           this.getCampanias();
         })
         .catch((err) => {
-          this.$q.notify({
-            type: "negative",
-            message: "Error al registrar campaña",
-          });
+          this.$q.notify({ type: "negative", message: "Error al registrar campaña" });
           console.error(err);
         });
     },
@@ -139,6 +319,53 @@ export default {
       this.fecini = "";
       this.fecfin = "";
       this.idDistrito = 0;
+      // reset editing state
+      this.isEditing = false;
+      this.editingId = null;
+    },
+
+    editarCampania(campania) {
+      // open dialog and prefill with values from the selected campaign
+      this.isEditing = true;
+      this.editingId = campania.idCampania;
+      this.titulo = campania.título || campania.titulo || "";
+      this.descripcion = campania.descripcion || "";
+      this.fecini = campania.fechaInicio ? campania.fechaInicio.split("T")[0] : "";
+      this.fecfin = campania.fechaFin ? campania.fechaFin.split("T")[0] : "";
+
+      // Try to set district selections if we have nested data, otherwise just set id
+      this.distritoSeleccionado = campania.idDistrito || "";
+
+      this.dialog = true;
+    },
+
+    abrirNuevo() {
+      this.limpiarFormulario();
+      this.isEditing = false;
+      this.editingId = null;
+      this.dialog = true;
+    },
+
+    eliminarCampania(id) {
+      console.log("Eliminar campaña con ID:", id);
+      this.$q.dialog({
+        title: 'Eliminar campaña',
+        message: '¿Está seguro de que desea eliminar esta campaña? Esta acción no se puede deshacer.',
+        cancel: true,
+        persistent: true
+      }).onOk(() => {
+        this.$api.delete(`api/campania/${id}`)
+          .then(() => {
+            this.$q.notify({ type: 'positive', message: 'Campaña eliminada correctamente' });
+            this.getCampanias();
+          })
+          .catch((err) => {
+            this.$q.notify({ type: 'negative', message: 'Error al eliminar campaña' });
+            console.error(err);
+          })
+      }).onCancel(() => {
+        // user cancelled
+      });
     },
 
     formatFecha(fecha) {
@@ -148,6 +375,7 @@ export default {
 
   mounted() {
     this.getCampanias();
+    this.fetchDepartamentos();
   },
 };
 </script>
@@ -265,4 +493,33 @@ input:focus {
   text-align: center;
   padding: 1rem;
 }
+
+/* -------- ESTILO PARA SELECT (COMBOBOX) -------- */
+select {
+  padding: 0.7rem;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  background: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #334155;
+}
+
+select:focus {
+  border-color: #6366f1;
+  outline: none;
+}
+
+select:disabled {
+  background: #f1f5f9;
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+
+/* Para que se vea igual cuando el mouse está encima */
+select:hover:not(:disabled) {
+  border-color: #94a3f6;
+}
+
 </style>
