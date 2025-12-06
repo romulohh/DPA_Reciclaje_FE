@@ -9,12 +9,12 @@
           </q-card>
           <!-- Formulario de favorito -->
             <form @submit.prevent="guardarFavorito">
-              <q-btn type="submit" class="q-mt-md" style="margin-left: 10px;"
+              <q-btn v-if="isLoggedIn" type="submit" class="q-mt-md" style="margin-left: 10px;"
               :color="esFavorito ? 'negative' : 'secondary'"
               :icon="esFavorito ? 'favorite' : 'favorite_border'"
               :label="esFavorito ? 'Quitar de favoritos' : 'Marcar favorito'" />
             </form>
-            <q-card-section>
+            <q-card-section v-if="isLoggedIn" >
               <div class="text-subtitle1">Califica este producto:</div>
               <q-rating v-model="calificacion" max="5" size="2em" color="amber" icon="star"
                 icon-half="star_half" icon-selected="star" />
@@ -47,18 +47,18 @@
               <div class="q-mt-md">
                 <div class="text-h5 font-weight-bold q-mt-md">Precio S/ {{ product.precio }}</div>
               </div>
-              <div class="q-mt-lg">
-                <q-btn v-if="isLoggedIn" color="primary" label="Agregar al carrito" />
-              </div>
-
+              <form @submit.prevent="agregarCarrito">
+                <div class="q-mt-lg">
+                  <q-btn v-if="isLoggedIn && product.motivo === 'V'" type="submit" color="primary" label="Agregar al carrito" />
+                </div>
+              </form>
             </q-card-section>
           </q-card>
           <form @submit.prevent="guardarComentario">
-
-              <q-input v-model="comentario" type="textarea" label="Deja un comentario" filled
+              <q-input v-if="isLoggedIn" v-model="comentario" type="textarea" label="Deja un comentario" filled
                 lazy-rules :rules="[val => !!val || 'El comentario no puede estar vacío']" :disable="comentarioGuardado" />
 
-              <q-btn type="submit" class="q-mt-md" label="Guardar comentario" color="primary" icon="send" :disable="comentarioGuardado" />
+              <q-btn v-if="isLoggedIn" type="submit" class="q-mt-md" label="Guardar comentario" color="primary" icon="send" :disable="comentarioGuardado" />
             </form>
 
         </div>
@@ -284,8 +284,92 @@ export default {
             console.error('Error al cargar favorito: ', error)
           })
       }
-
     },
+    async agregarCarrito() {
+      console.log('Buscando carrito en localStorage')
+      let idUsuarioComprador = localStorage.getItem('idUsuario')
+      let idCarrito = localStorage.getItem('idCarrito')
+      let token = localStorage.getItem('token')
+      let idProducto = this.product.idProducto
+
+      // Si no existe carrito, crear uno nuevo
+      if (!idCarrito) {
+        console.log('Crea carrito para el usuario: ', idUsuarioComprador)
+        let payload = {
+          idUsuario: idUsuarioComprador,
+          Estado: "A"
+        }
+        try {
+          const response = await this.$api.post('/api/Carrito', payload, {
+            headers: {
+              Authorization: `Bearer ${JSON.parse(token)}`,
+            },
+          })
+          idCarrito = response.data.idCarrito
+          localStorage.setItem('idCarrito', idCarrito)
+          console.log('Carrito creado con ID:', idCarrito)
+        } catch (error) {
+          console.error('Error al crear carrito: ', error)
+          this.$q.notify({
+            type: 'negative',
+            position: 'top',
+            message: 'Error al crear el carrito'
+          })
+          return
+        }
+      }
+
+      // Verificar si el producto ya existe en el carrito
+      try {
+        let checkUrl = `api/Carrito/exists-item?idCarrito=${idCarrito}&idProducto=${idProducto}`
+        let checkResponse = await this.$api.get(checkUrl, {
+          headers: {
+            Authorization: `Bearer ${JSON.parse(token)}`,
+          },
+        })
+
+        let productoExiste = checkResponse.data === true || checkResponse.data === 'true'
+
+        if (productoExiste) {
+          this.$q.notify({
+            type: 'warning',
+            position: 'top',
+            message: 'Este producto ya está en tu carrito'
+          })
+          return
+        }
+
+        // Si el producto no existe, agregarlo al carrito
+        console.log('Agregando producto al carrito:', idCarrito, 'producto:', idProducto, 'precio:', this.product.precio)
+        let payloadItem = {
+          idCarrito: idCarrito,
+          idProducto: idProducto,
+          Precio: this.product.precio
+        }
+
+        await this.$api.post('/api/Carrito/item', payloadItem, {
+          headers: {
+            Authorization: `Bearer ${JSON.parse(token)}`,
+          },
+        })
+
+        console.log('Producto agregado al carrito exitosamente')
+        this.$q.notify({
+          type: 'positive',
+          position: 'top',
+          message: 'Producto agregado al carrito'
+        })
+
+      } catch (error) {
+        console.error('Error al procesar el carrito: ', error)
+        this.$q.notify({
+          type: 'negative',
+          position: 'top',
+          message: 'Error al agregar producto al carrito'
+        })
+      }
+    },
+
   }
 }
 </script>
