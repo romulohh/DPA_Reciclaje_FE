@@ -37,13 +37,13 @@ const linksList = [
     title: 'Campaña',
     caption: 'Ir a campañas',
     icon: 'campaign',
-    to: '/campania',
+    to: '/admin/campania',
   },
   {
     title: 'Producto',
     caption: 'Ir a Productos',
     icon: 'inventory_2',
-    to: '/productoform',
+    to: '/admin/productoform',
   },
   {
     title: 'Docs',
