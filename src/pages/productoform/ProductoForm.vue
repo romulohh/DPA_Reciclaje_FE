@@ -64,19 +64,26 @@
           </div>
         </div>
 
-        <div class="form-group">
-          <div class="input-wrapper">
-            <input v-model="motivo" type="text" id="motivo" name="motivo" />
-            <label for="motivo">Motivo</label>
-          </div>
-        </div>
+        <!-- Campos Motivo y Estado eliminados; se guardan como 'V' (Venta) y 'A' (Activo) por defecto -->
 
         <div class="form-group">
-          <div class="input-wrapper">
-            <select v-model="estado" id="estado">
-              <option value="1">Activo</option>
-              <option value="0">Inactivo</option>
-            </select>
+          <label style="margin-bottom: 6px; display:block;">Imágenes del producto (1 a 3)</label>
+          <input
+            ref="imagenesInput"
+            type="file"
+            accept="image/*"
+            multiple
+            @change="onImagesSelected"
+          />
+          <small v-if="imagenError" class="error-text">{{ imagenError }}</small>
+
+          <div v-if="imagenesPreview.length" class="image-preview-container">
+            <img
+              v-for="(src, index) in imagenesPreview"
+              :key="index"
+              :src="src"
+              class="image-preview"
+            />
           </div>
         </div>
 
@@ -106,6 +113,25 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helv
 .btn-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 16px; height: 16px; border: 2px solid transparent; border-top: 2px solid white; border-radius: 50%; opacity: 0; animation: spin 1s linear infinite; }
 .login-btn.loading .btn-loader { opacity: 1; }
 @keyframes spin { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+.image-preview-container {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.image-preview {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+}
+
+.error-text {
+  color: #e53935;
+  font-size: 12px;
+}
 </style>
 
 <script>
@@ -118,13 +144,16 @@ export default {
       marca: '',
       precio: null,
       cantidad: null,
-      motivo: '',
       categoriaId: '',
       categorias: [],
       loadingCategories: false,
-      estado: 'A',
       disponible: '1',
       loading: false,
+
+      // Manejo de imágenes
+      imagenesArchivo: [],   // File[]
+      imagenesPreview: [],   // URLs para mostrar en el form
+      imagenError: '',       // Mensaje de validación de imágenes
     }
   },
   methods: {
@@ -134,7 +163,6 @@ export default {
         .get('api/Categoria')
         .then((res) => {
           const raw = Array.isArray(res.data) ? res.data : []
-          // Normalizar posibles nombres de propiedades desde el backend y filtrar ids vacíos
           this.categorias = raw
             .map((it) => {
               return {
@@ -156,41 +184,130 @@ export default {
           this.loadingCategories = false
         })
     },
-    guardarProducto() {
-      this.loading = true
-      const payload = {
-        Nombre: this.nombre,
-        Descripcion: this.descripcion,
-        Marca: this.marca || null,
-        Precio: this.precio,
-        Cantidad: this.cantidad,
-        Motivo: this.motivo || null,
-        IdCategoria: this.categoriaId ? Number(this.categoriaId) : null,
-        // Guardar Estado como '1' (activo) o '0' (inactivo)
-        Estado: String(this.estado),
-        Disponible: String(this.disponible),
+
+    // Manejo de selección de imágenes
+    onImagesSelected(event) {
+      this.imagenError = ''
+      const files = Array.from(event.target.files || [])
+
+      if (files.length === 0) {
+        this.imagenesArchivo = []
+        this.imagenesPreview = []
+        this.imagenError = 'Debe seleccionar al menos una imagen.'
+        return
       }
 
-      // Usamos el ProductoController en el backend: api/Producto
-      this.$api.post('api/Producto', payload)
-        .then(() => {
-          this.$q.notify({ type: 'positive', position: 'top', message: 'Producto guardado correctamente.' })
-          // limpiar formulario
-          this.nombre = ''
-          this.descripcion = ''
-          this.marca = ''
-          this.precio = null
-          this.cantidad = null
-          this.motivo = ''
-          this.categoriaId = ''
-          this.estado = 'A'
-          this.disponible = '1'
+      if (files.length > 3) {
+        this.imagenError = 'Solo puede seleccionar hasta 3 imágenes. Se tomarán las 3 primeras.'
+      }
+
+      this.imagenesArchivo = files.slice(0, 3)
+      this.imagenesPreview = this.imagenesArchivo.map((file) => URL.createObjectURL(file))
+      console.log('Imágenes seleccionadas:', this.imagenesArchivo)
+      console.log('Previews generadas:', this.imagenesPreview)
+    },
+
+    // ⬇⬇⬇ AQUÍ VA LA LÓGICA NUEVA PARA GUARDAR PRODUCTO + IMÁGENES ⬇⬇⬇
+    async guardarProducto() {
+      // Validaciones básicas del formulario
+      if (!this.nombre || !this.descripcion || !this.categoriaId) {
+        this.$q.notify({
+          type: 'negative',
+          position: 'top',
+          message: 'Completa los campos obligatorios.'
         })
-        .catch((err) => {
-          const msg = err?.response?.data?.message || err.message || 'Error al guardar producto.'
-          this.$q.notify({ type: 'negative', position: 'top', message: msg })
+        return
+      }
+
+      // Validación de imágenes (1 a 3)
+      if (!this.imagenesArchivo.length) {
+        this.imagenError = 'Debe adjuntar al menos una imagen.'
+        return
+      }
+      if (this.imagenesArchivo.length > 3) {
+        this.imagenError = 'Solo puede adjuntar hasta 3 imágenes.'
+        return
+      }
+
+      this.loading = true
+      this.imagenError = ''
+
+      try {
+        // 1) Crear el producto (sin enviar Imagen en el payload)
+        const payload = {
+          Nombre: this.nombre,
+          Descripcion: this.descripcion,
+          Marca: this.marca || null,
+          Precio: this.precio,
+          Cantidad: this.cantidad,
+          Motivo: 'V', // Venta
+          IdCategoria: this.categoriaId ? Number(this.categoriaId) : null,
+          Estado: 'A', // Activo
+          Disponible: String(this.disponible)
+        }
+
+        console.log('Payload a enviar:', payload)
+
+        const res = await this.$api.post('api/Producto', payload)
+
+        // El backend devuelve: { idProducto = id }
+        const data = res.data || {}
+        const idProducto = data.idProducto || data.id || null
+
+        console.log('Respuesta al crear producto:', data)
+
+        if (!idProducto) {
+          throw new Error('No se recibió el ID del producto desde el servidor.')
+        }
+
+        // 2) Subir las imágenes al endpoint: POST api/Producto/{id}/imagenes
+        const formData = new FormData()
+        this.imagenesArchivo.forEach((file) => {
+          formData.append('files', file) // "files" debe coincidir con el nombre del parámetro en el backend
         })
-        .finally(() => { this.loading = false })
+
+        const resImgs = await this.$api.post(`api/Producto/${idProducto}/imagenes`, formData, {
+          headers: {
+            'Content-Type': 'multipart/form-data'
+          }
+        })
+
+        console.log('Respuesta al subir imágenes:', resImgs.data)
+
+        // 3) Notificar éxito y limpiar formulario
+        this.$q.notify({
+          type: 'positive',
+          position: 'top',
+          message: 'Producto e imágenes guardados correctamente.'
+        })
+
+        // limpiar formulario
+        this.nombre = ''
+        this.descripcion = ''
+        this.marca = ''
+        this.precio = null
+        this.cantidad = null
+        this.categoriaId = ''
+        this.disponible = '1'
+
+        this.imagenesArchivo = []
+        this.imagenesPreview = []
+        this.imagenError = ''
+
+        if (this.$refs.imagenesInput) {
+          this.$refs.imagenesInput.value = null
+        }
+      } catch (err) {
+        console.error('Error en guardarProducto:', err)
+        const msg = err?.response?.data?.message || err.message || 'Error al guardar producto.'
+        this.$q.notify({
+          type: 'negative',
+          position: 'top',
+          message: msg
+        })
+      } finally {
+        this.loading = false
+      }
     }
   },
   mounted() {
@@ -198,3 +315,4 @@ export default {
   }
 }
 </script>
+
