@@ -19,16 +19,24 @@
   </q-layout>
 </template>
 
-<style>
+<style scoped>
 .contenedor {
   display: flex;
   gap: 20px;
   padding: 20px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden; /* Prevenir desbordamiento */
 }
 
-/* Filtros a la izquierda */
+/* Filtros a la izquierda - ancho fijo */
 .filtros {
-  flex: 3;    /* ocupa menos espacio */
+  flex: 0 0 250px !important;
+  min-width: 250px !important;
+  max-width: 250px !important;
+  width: 250px !important;
+  overflow: hidden; /* Prevenir que el contenido se desborde */
 }
 
 /* Card genérica */
@@ -38,23 +46,32 @@
   padding: 16px;
   background: #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  width: 100%;
+  box-sizing: border-box;
 }
 
-.product-list {
-  width: 75%;
+/* Controlar el ancho de los componentes internos */
+.filtros :deep(.q-select),
+.filtros :deep(.category-filter),
+.filtros :deep(.distrito-filter) {
+  max-width: 100%;
+  width: 100%;
 }
+
 /* En pantallas pequeñas, apilar filtros arriba y catálogo abajo */
-@media (max-width: 768px) {
-  .contenedor {
-    grid-template-columns: 1fr; /* una sola columna */
-  }
-}
-/* En pantallas pequeñas, apilar */
 @media (max-width: 768px) {
   .contenedor {
     flex-direction: column;
   }
+
+  .filtros {
+    flex: 0 0 auto !important;
+    min-width: 100% !important;
+    max-width: 100% !important;
+    width: 100% !important;
+  }
 }
+
 </style>
 
 <script>

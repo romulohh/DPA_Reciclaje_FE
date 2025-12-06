@@ -8,11 +8,29 @@
   </div>
 </template>
 
-<style>
+<style scoped>
+.product-list {
+  flex: 1;
+  min-width: 0; /* Importante para que flex funcione correctamente */
+  width: 100%;
+}
+
 .product-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .product-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
 }
 </style>
 
