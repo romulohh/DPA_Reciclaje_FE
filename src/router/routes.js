@@ -51,7 +51,7 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/admin/campania'
+        redirect: '/admin/productoform'
       },
       {
         path: 'campania',
@@ -60,6 +60,10 @@ const routes = [
       {
         path: 'productoform',
         component: () => import('src/pages/productoform/ProductoForm.vue'),
+      },
+      {
+        path: '/admin/categoria',
+        component: () => import('src/pages/categoria/CategoriaForm.vue'),
       },
     ],
   },
