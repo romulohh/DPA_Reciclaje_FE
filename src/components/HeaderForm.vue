@@ -3,7 +3,7 @@
   <q-toolbar>
     <q-toolbar-title>
       <q-avatar>
-        <img src="https://cdn.quasar.dev/logo-v2/svg/logo-mono-white.svg">
+        <img src="https://iili.io/fufxSr7.png">
       </q-avatar>
       Recicla Perú
     </q-toolbar-title>

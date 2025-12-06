@@ -18,7 +18,7 @@
             <div class="empty-icon">🛒</div>
             <h3>Tu carrito está vacío</h3>
             <p>Agrega productos para comenzar a comprar</p>
-            <button class="btn-seguir-comprando" @click="$router.push('/principal')">
+            <button class="btn-seguir-comprando" @click="$router.push('/home')">
               Seguir Comprando
             </button>
           </div>
@@ -169,14 +169,56 @@ export default {
     handleImageError(event) {
       event.target.src = '/assets/images/producto/default.jpg'
     },
-    handlePagar() {
-      this.$q.notify({
-        type: 'info',
-        position: 'top',
-        message: 'Funcionalidad de pago en desarrollo',
-      })
-      // TODO: Implementar lógica de pago
-    },
+
+    async handlePagar() {
+      let idCarrito = localStorage.getItem('idCarrito')
+      let token = localStorage.getItem('token')
+
+      if (!idCarrito) {
+        this.$q.notify({
+          type: 'negative',
+          position: 'top',
+          message: 'No se puede procesar el pago: carrito no encontrado.'
+        })
+        return
+      }
+
+      const payload = {
+        idCarrito: Number(idCarrito),
+        idMetodoPago: 1, // ejemplo: 1 = tarjeta
+        monto: this.total,
+        numeroOperacion: "OP-" + Date.now()
+      }
+
+      try {
+        const response = await this.$api.post("/api/Pago", payload, {
+          headers: {
+            Authorization: `Bearer ${JSON.parse(token)}`
+          }
+        })
+
+        this.$q.notify({
+          type: 'positive',
+          position: 'top',
+          message: 'Pago realizado con éxito'
+        })
+
+        // Vaciar carrito
+        this.carritoItems = []
+        localStorage.removeItem('idCarrito')
+
+        console.log('Respuesta de pago:', response.data);
+
+      } catch (error) {
+        console.error(error)
+        this.$q.notify({
+          type: 'negative',
+          position: 'top',
+          message: 'Error al procesar el pago'
+        })
+      }
+    }
+
   },
 }
 </script>
