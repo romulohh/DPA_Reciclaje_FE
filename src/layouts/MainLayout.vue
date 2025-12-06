@@ -18,7 +18,7 @@
       <q-list>
         <q-item-label header> Essential Links </q-item-label>
 
-        <EssentialLink v-for="link in linksList" :key="link.title" v-bind="link" />
+        <EssentialLink v-for="link in filteredLinks" :key="link.title" v-bind="link" />
       </q-list>
     </q-drawer>
 
@@ -29,8 +29,10 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import EssentialLink from 'components/EssentialLink.vue'
+
+const userRole = localStorage.getItem("rol")
 
 const linksList = [
   {
@@ -38,6 +40,7 @@ const linksList = [
     caption: 'Ir a campañas',
     icon: 'campaign',
     to: '/admin/campania',
+    rol: 'A'
   },
   {
     title: 'Producto',
@@ -50,44 +53,16 @@ const linksList = [
     caption: 'Ir a Categorías',
     icon: 'school',
     to: '/admin/categoria',
+    rol: 'A'
   },
-  /*{
-    title: 'Github',
-    caption: 'github.com/quasarframework',
-    icon: 'code',
-    link: 'https://github.com/quasarframework',
-  },
-  {
-    title: 'Discord Chat Channel',
-    caption: 'chat.quasar.dev',
-    icon: 'chat',
-    link: 'https://chat.quasar.dev',
-  },
-  {
-    title: 'Forum',
-    caption: 'forum.quasar.dev',
-    icon: 'record_voice_over',
-    link: 'https://forum.quasar.dev',
-  },
-  {
-    title: 'Twitter',
-    caption: '@quasarframework',
-    icon: 'rss_feed',
-    link: 'https://twitter.quasar.dev',
-  },
-  {
-    title: 'Facebook',
-    caption: '@QuasarFramework',
-    icon: 'public',
-    link: 'https://facebook.quasar.dev',
-  },
-  {
-    title: 'Quasar Awesome',
-    caption: 'Community Quasar projects',
-    icon: 'favorite',
-    link: 'https://awesome.quasar.dev',
-  },*/
 ]
+
+// ⬇️ Computed que filtra los links permitidos
+const filteredLinks = computed(() =>
+  linksList.filter(link =>
+    !link.rol || link.rol === userRole
+  )
+)
 
 const leftDrawerOpen = ref(false)
 

@@ -538,6 +538,7 @@ export default {
           localStorage.setItem('token', JSON.stringify(response.data.token))
           localStorage.setItem('username', response.data.nombres)
           localStorage.setItem('idUsuario', response.data.idUsuario)
+          localStorage.setItem('rol', response.data.rol)
           this.idUsuario = response.data.idUsuario
           this.LeeCarritoActivo()
           // Redireccionar a product

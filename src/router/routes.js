@@ -51,7 +51,7 @@ const routes = [
     children: [
       {
         path: '',
-        redirect: '/admin/campania'
+        redirect: '/admin/productoform'
       },
       {
         path: 'campania',
