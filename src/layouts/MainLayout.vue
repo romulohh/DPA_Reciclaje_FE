@@ -45,13 +45,13 @@ const linksList = [
     icon: 'inventory_2',
     to: '/admin/productoform',
   },
-  /*{
-    title: 'Docs',
-    caption: 'quasar.dev',
-    icon: 'school',
-    link: 'https://quasar.dev',
-  },
   {
+    title: 'Categorias',
+    caption: 'Ir a Categorías',
+    icon: 'school',
+    to: '/admin/categoria',
+  },
+  /*{
     title: 'Github',
     caption: 'github.com/quasarframework',
     icon: 'code',

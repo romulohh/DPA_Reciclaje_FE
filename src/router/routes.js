@@ -61,6 +61,10 @@ const routes = [
         path: 'productoform',
         component: () => import('src/pages/productoform/ProductoForm.vue'),
       },
+      {
+        path: '/admin/categoria',
+        component: () => import('src/pages/categoria/CategoriaForm.vue'),
+      },
     ],
   },
   // Always leave this as last one,
